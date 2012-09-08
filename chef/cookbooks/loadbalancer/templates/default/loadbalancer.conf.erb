@@ -1,0 +1,16 @@
+
+upstream appcluster {
+  <% @upstream_servers.each do |ip_address| -%>
+  server <%= ip_address %>;
+  <% end -%>
+}
+
+server {
+  listen 80;
+  server_name load_balancer_test;
+
+  location / {
+    proxy_pass http://appcluster;
+  }
+}
+
