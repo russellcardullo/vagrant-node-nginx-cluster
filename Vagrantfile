@@ -2,6 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant::Config.run do |config|
+  # Define and configure application servers
   app_servers = { :app1 => '192.168.1.44',
                   :app2 => '192.168.1.45'
                 }
@@ -20,4 +21,22 @@ Vagrant::Config.run do |config|
     end
   end
 
+  # Configure load balancer
+  config.vm.define :load_balancer do |load_balancer_config|
+    load_balancer_config.vm.box = "precise32"
+    load_balancer_config.vm.host_name = "loadbalancer"
+    load_balancer_config.vm.network :hostonly, "192.168.1.43"
+    load_balancer_config.vm.provision :chef_solo do |chef|
+      chef.cookbooks_path = "chef/cookbooks"
+      chef.roles_path = "chef/roles"
+      chef.data_bags_path = "chef/data_bags"
+      chef.add_role "load_balancer"
+      chef.json = {
+        'loadbalancer' => {
+          'upstream_servers' => ['192.168.1.44:1337','192.168.1.45:1337']
+        }
+      }
+    end
+  end
+ 
 end
